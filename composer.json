@@ -1,0 +1,19 @@
+{
+    "name": "seal/laravel-data-mapper",
+    "description": "Data mapper library for laravel",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Seal\\LaravelDataMapper\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "SEAL",
+            "email": "nick.valaam@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
