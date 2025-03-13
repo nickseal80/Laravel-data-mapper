@@ -4,7 +4,6 @@ namespace Seal\LaravelDataMapper\Entity\Reflection;
 
 use ReflectionClass;
 use ReflectionException;
-use ReflectionObject;
 use ReflectionProperty;
 use Seal\LaravelDataMapper\Attributes\Column\Column;
 use Seal\LaravelDataMapper\Exceptions\EntityException;
@@ -29,9 +28,9 @@ class ReflectionEntity extends ReflectionNode
      */
     public function initialize(): void
     {
-        $this->tableName = $this->getTableName();
+        $this->tableName = $this->takeTableName();
 
-        $columns = $this->getColumns();
+        $columns = $this->takeColumns();
         if (count($columns) <= 0) {
             throw new EntityException("Entity does not contain any columns");
         }
@@ -41,7 +40,7 @@ class ReflectionEntity extends ReflectionNode
         }
     }
 
-    private function getTableName(): string
+    public function takeTableName(): string
     {
         return $this->reflectionClass->getStaticPropertyValue('table');
     }
@@ -49,7 +48,7 @@ class ReflectionEntity extends ReflectionNode
     /**
      * @return array<ReflectionProperty>
      */
-    private function getColumns(): array
+    private function takeColumns(): array
     {
         $columns = [];
         $properties = $this->reflectionClass->getProperties();
@@ -62,5 +61,21 @@ class ReflectionEntity extends ReflectionNode
         }
 
         return $columns;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTableName(): string
+    {
+        return $this->tableName;
+    }
+
+    /**
+     * @return array
+     */
+    public function getColumns(): array
+    {
+        return $this->columns;
     }
 }

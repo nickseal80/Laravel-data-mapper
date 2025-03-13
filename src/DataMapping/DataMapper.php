@@ -1,9 +1,10 @@
 <?php
 
-namespace Seal\LaravelDataMapper;
+namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Database\DatabaseManager;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
+use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
 
 class DataMapper implements DataMapperInterface
@@ -13,12 +14,24 @@ class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
 
-    public function __construct(DatabaseManager $db, Hydrator $hydrator, string $table, string $entityClass)
+    /**
+     * @throws \ReflectionException
+     */
+    public function __construct(DatabaseManager $db, Hydrator $hydrator, string $entityClass)
     {
         $this->db = $db;
         $this->hydrator = $hydrator;
-        $this->table = $table;
         $this->entityClass = $entityClass;
+        $this->setTable();
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    private function setTable()
+    {
+        $refEntity = new ReflectionEntity($this->entityClass);
+        $this->table = $refEntity->takeTableName();
     }
 
     public function find(int $id)

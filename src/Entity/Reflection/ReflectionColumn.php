@@ -2,17 +2,19 @@
 
 namespace Seal\LaravelDataMapper\Entity\Reflection;
 
+use ReflectionAttribute;
 use ReflectionProperty;
 use Seal\LaravelDataMapper\Attributes\Column\Column;
 use Seal\LaravelDataMapper\Attributes\Column\Type;
+use Seal\LaravelDataMapper\Utils\CodeStyle;
 use Seal\LaravelDataMapper\Utils\ReflectionUtil;
 
 class ReflectionColumn extends ReflectionNode
 {
     private ReflectionProperty $property;
-    private string $name;
-    private string $columnName;
-    private string $columnType;
+    private readonly string $name;
+    private readonly string $columnName;
+    private readonly string $columnType;
     private array $properties = [];
 
     public function __construct(ReflectionProperty $property)
@@ -30,16 +32,56 @@ class ReflectionColumn extends ReflectionNode
     private function getProperties()
     {
         $properties = ReflectionUtil::getPropAttribute($this->property, Column::class);
+        $this->setColumnName($properties);
         foreach ($properties->getArguments() as $property => $value) {
             if ($value instanceof Type) {
                 $this->columnType = $value->value;
             }
-            if ((bool)$value === true) {
-                print_r($property);
+
+            if ($value === true) {
+                $this->properties[] = $property;
+            }
+        }
+    }
+
+    private function setColumnName(ReflectionAttribute $properties)
+    {
+        $columnName = null;
+
+        foreach ($properties->getArguments() as $property => $value) {
+            if ($property === 'name') {
+                $columnName = $value;
             }
         }
 
-        dd(config('columnProperties.catalog'));
+        if (!$columnName) {
+            $columnName = CodeStyle::camelToSnake($this->name);
+        }
+
+        $this->columnName = $columnName;
     }
 
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColumnName(): string
+    {
+        return $this->columnName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColumnType(): string
+    {
+        return $this->columnType;
+    }
 }
