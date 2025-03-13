@@ -3,6 +3,9 @@
     "description": "Data mapper library for laravel",
     "type": "library",
     "license": "MIT",
+    "require-dev": {
+        "phpstan/phpstan": "^2.1"
+    },
     "autoload": {
         "psr-4": {
             "Seal\\LaravelDataMapper\\": "src/"

@@ -8,11 +8,6 @@ use Attribute;
 class OneToOne
 {
     public function __construct(
-        public string $join,
-        public string $leftJoin,
-        public string $rightJoin,
-        public string $innerJoin,
-
-        public string $on,
+        public FKConstraints $foreignKeyConstraint = FKConstraints::CASCADE
     ) {}
 }

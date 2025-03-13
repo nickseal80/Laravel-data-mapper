@@ -1,6 +1,6 @@
 <?php
 
-namespace Seal\Utils;
+namespace Seal\LaravelDataMapper\Utils;
 
 class CodeStyle
 {

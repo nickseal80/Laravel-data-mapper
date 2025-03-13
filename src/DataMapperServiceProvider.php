@@ -3,6 +3,7 @@
 namespace Seal\LaravelDataMapper;
 
 use Illuminate\Support\ServiceProvider;
+use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
 
 class DataMapperServiceProvider extends ServiceProvider
@@ -19,10 +20,14 @@ class DataMapperServiceProvider extends ServiceProvider
                 $entity::class
             );
         });
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/columnProperties.php', 'columnProperties');
     }
 
     public function boot()
     {
-        // Публикация конфигов, миграций и т.д.
+        $this->publishes([
+            __DIR__ . '/../config/columnProperties.php' => config_path('columnProperties.php'),
+        ], 'config');
     }
 }
