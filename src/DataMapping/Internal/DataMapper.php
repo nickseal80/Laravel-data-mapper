@@ -8,7 +8,10 @@ use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
 
-class DataMapper implements DataMapperInterface
+/**
+ * @internal
+ */
+abstract class DataMapper implements DataMapperInterface
 {
     protected DatabaseManager $db;
     protected Hydrator $hydrator;

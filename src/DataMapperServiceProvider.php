@@ -12,10 +12,10 @@ class DataMapperServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(DataMapperFacade::DATA_MAPPING_FACADE_ACCESSOR, function ($app) {
-            return new DataMapper(
+            return new class(
                 $app['db'],
                 new Hydrator(),
-            );
+            ) extends DataMapper {};
         });
         $this->app->alias(DataMapperFacade::DATA_MAPPING_FACADE_ACCESSOR, DataMapperFacade::class);
 

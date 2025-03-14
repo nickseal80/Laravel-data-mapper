@@ -3,7 +3,6 @@
 namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Support\Facades\Facade;
-
 /**
  * @method static find(int $id, string $entityClass)
  */
