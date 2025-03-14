@@ -3,8 +3,8 @@
 namespace Seal\LaravelDataMapper;
 
 use Illuminate\Support\ServiceProvider;
-use Seal\LaravelDataMapper\DataMapping\DataMapper;
 use Seal\LaravelDataMapper\DataMapping\DataMapperFacade;
+use Seal\LaravelDataMapper\DataMapping\Internal\DataMapper;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
 
 class DataMapperServiceProvider extends ServiceProvider

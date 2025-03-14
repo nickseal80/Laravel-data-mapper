@@ -9,7 +9,10 @@
     "autoload": {
         "psr-4": {
             "Seal\\LaravelDataMapper\\": "src/"
-        }
+        },
+        "exclude-from-classmap": [
+            "src/DataMapping/Internal/*"
+        ]
     },
     "authors": [
         {

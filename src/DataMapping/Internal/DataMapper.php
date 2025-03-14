@@ -1,6 +1,6 @@
 <?php
 
-namespace Seal\LaravelDataMapper\DataMapping;
+namespace Seal\LaravelDataMapper\DataMapping\Internal;
 
 use Illuminate\Database\DatabaseManager;
 use ReflectionException;
