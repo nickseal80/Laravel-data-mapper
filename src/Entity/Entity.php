@@ -6,6 +6,8 @@ class Entity
 {
     protected static string $table;
 
+    protected string $state = EntityStates::TRANSIENT->value;
+
     private bool $useRelationships = true;
 
     public static function getTable(): string

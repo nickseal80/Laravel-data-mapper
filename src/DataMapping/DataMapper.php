@@ -3,6 +3,7 @@
 namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Database\DatabaseManager;
+use ReflectionException;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
@@ -14,19 +15,33 @@ class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
 
-    /**
-     * @throws \ReflectionException
-     */
-    public function __construct(DatabaseManager $db, Hydrator $hydrator, string $entityClass)
+    public function __construct(DatabaseManager $db, Hydrator $hydrator)
     {
         $this->db = $db;
         $this->hydrator = $hydrator;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function forEntity(string $entityClass): self
+    {
+        $clone = clone $this;
+        $clone->setEntityClass($entityClass);
+        return $clone;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function setEntityClass(string $entityClass)
+    {
         $this->entityClass = $entityClass;
         $this->setTable();
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function setTable()
     {
