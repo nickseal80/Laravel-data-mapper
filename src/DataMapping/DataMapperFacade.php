@@ -4,7 +4,8 @@ namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Support\Facades\Facade;
 /**
- * @method static find(int $id, string $entityClass)
+ * @method findById(int $id)
+ * @method getFields(array $field): static
  */
 class DataMapperFacade extends Facade
 {

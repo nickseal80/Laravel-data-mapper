@@ -3,14 +3,13 @@
 namespace Seal\LaravelDataMapper\DataMapping\Internal;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use ReflectionException;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
+use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
 
-/**
- * @internal
- */
 abstract class DataMapper implements DataMapperInterface
 {
     protected DatabaseManager $db;
@@ -18,11 +17,38 @@ abstract class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
 
+    private Builder $builder;
+
     public function __construct(DatabaseManager $db, Hydrator $hydrator)
     {
         $this->db = $db;
         $this->hydrator = $hydrator;
     }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function setEntityClass(string $entityClass)
+    {
+        $this->entityClass = $entityClass;
+        $this->initBuilder();
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    private function initBuilder()
+    {
+        $refEntity = new ReflectionEntity($this->entityClass);
+        $this->table = $refEntity->takeTableName();
+        $this->builder = $this->db->table($this->table);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Query methods
+    |--------------------------------------------------------------------------
+    */
 
     /**
      * @throws ReflectionException
@@ -34,28 +60,24 @@ abstract class DataMapper implements DataMapperInterface
         return $clone;
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function setEntityClass(string $entityClass)
+    /*
+    |--------------------------------------------------------------------------
+    | Read methods
+    |--------------------------------------------------------------------------
+    */
+
+    public function getFields(array|string $fields): static
     {
-        $this->entityClass = $entityClass;
-        $this->setTable();
+        $this->builder->select($fields);
+        return $this;
     }
 
     /**
      * @throws ReflectionException
      */
-    private function setTable()
+    public function findById(int $id): ?Entity
     {
-        $refEntity = new ReflectionEntity($this->entityClass);
-        $this->table = $refEntity->takeTableName();
-    }
-
-    public function find(int $id)
-    {
-        $data = $this->db
-            ->table($this->table)
+        $data = $this->builder
             ->where('id', $id)
             ->first();
 
