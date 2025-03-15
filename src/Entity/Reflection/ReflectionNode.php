@@ -6,11 +6,11 @@ use Illuminate\Support\Str;
 
 abstract class ReflectionNode
 {
-    private readonly string $guid;
+    private readonly string $serial;
 
     public function __construct()
     {
-        $this->guid = Str::uuid();
+        $this->serial = Str::uuid();
 
         $this->initialize();
     }
@@ -20,8 +20,8 @@ abstract class ReflectionNode
     /**
      * @return string
      */
-    public function getGuid(): string
+    public function getSerial(): string
     {
-        return $this->guid;
+        return $this->serial;
     }
 }

@@ -20,6 +20,7 @@ abstract class DataMapper implements DataMapperInterface
     protected Hydrator $hydrator;
     protected string $table;
     protected string $entityClass;
+    protected ReflectionEntity $reflectionEntity;
 
     private Builder $builder;
 
@@ -35,6 +36,8 @@ abstract class DataMapper implements DataMapperInterface
     public function setEntityClass(string $entityClass)
     {
         $this->entityClass = $entityClass;
+        $this->reflectionEntity = new ReflectionEntity($entityClass);
+        dd($this->reflectionEntity);
         $this->initBuilder();
     }
 
@@ -81,6 +84,12 @@ abstract class DataMapper implements DataMapperInterface
     public function getFields(array $fields): static
     {
         $this->builder->select($fields);
+        return $this;
+    }
+
+    public function getRelationships(array $relationships): static
+    {
+        //...
         return $this;
     }
 
