@@ -4,15 +4,18 @@ namespace Seal\LaravelDataMapper\DataMapping\Internal;
 
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
+use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
-use Seal\LaravelDataMapper\Utils\CodeStyle;
 
 abstract class DataMapper implements DataMapperInterface
 {
+    public const FIRST = 'first';
+    public const LAST = 'last';
+
     protected DatabaseManager $db;
     protected Hydrator $hydrator;
     protected string $table;
@@ -67,44 +70,75 @@ abstract class DataMapper implements DataMapperInterface
     |--------------------------------------------------------------------------
     */
 
+    /*
+     * public function getFields(Criteria $criteria): static
+     * {
+     *      $this->builder->select($criteria->toQuery);
+     * }
+     *
+     * //STUB
+     */
     public function getFields(array $fields): static
     {
-//        $preparedFields = CodeStyle::camelToSnake($fields);
         $this->builder->select($fields);
         return $this;
     }
 
-    private function prepareField(array $fields)
+    public function findById(int $id): static
     {
-        //
+        $this->builder->where('id', $id);
+        return $this;
     }
 
-        /**
+    /*
+    |--------------------------------------------------------------------------
+    | Data methods
+    |--------------------------------------------------------------------------
+    | methods of obtaining data
+    */
+
+    /**
      * @throws ReflectionException
      */
-    public function findById(int $id): ?Entity
+    public function getOne(string $order = self::FIRST):Entity
     {
-        $data = $this->builder
-            ->where('id', $id)
-            ->first();
+        $data = $this->builder->$order();
+        return $this->hydrate($data);
+    }
 
-        if ($data) {
-            return $this->hydrator->hydrate((array)$data, $this->entityClass);
-        }
+    /**
+     * @throws ReflectionException
+     */
+    public function getMany(): Entity
+    {
+        $data = $this->builder->get();
+        return $this->hydrate($data);
+    }
 
-        return null;
+    #[NoReturn]
+    public function getQuery()
+    {
+        dd($this->builder->toSql(), $this->builder->getBindings());
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    private function hydrate($data)
+    {
+        return $this->hydrator->hydrate((array)$data, $this->entityClass);
     }
 
     public function save(object $entity): bool
     {
         $data = get_object_vars($entity);
 
-        return $this->db->table($this->table)->updateOrInsert(['id' => $data['id']], $data);
+        return $this->builder->updateOrInsert(['id' => $data['id']], $data);
     }
 
     public function delete(object $entity): int
     {
-        return $this->db->table($this->table)->where('id', $entity->id)->delete();
+        return $this->builder->where('id', $entity->id)->delete();
     }
 
 

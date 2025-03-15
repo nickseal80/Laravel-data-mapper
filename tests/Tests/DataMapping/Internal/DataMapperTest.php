@@ -10,6 +10,7 @@ use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Illuminate\Database\DatabaseManager;
+use ReflectionClass;
 use ReflectionException;
 use Seal\LaravelDataMapper\DataMapping\Internal\DataMapper;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
@@ -45,16 +46,10 @@ class DataMapperTest extends TestCase
      * @throws ReflectionException
      */
     #[Test]
-    public function testFindById()
+    public function test_find_by_id()
     {
-        $data = [
-            'id' => 1,
-            'name' => 'Test',
-            'email' => 'test@test.com',
-            'password' => '$2y$12$8YlEy/ubT2TMbREWKVwTEermCMUjZ2vnlNYKNShuvZqoO.rWOKvey',
-            'is_active' => 1,
-            'remember_token' => Str::random(10),
-        ];
+        /* @var array<string, mixed> $data */
+        $data = $this->getTestData();
 
         $this->queryBuilder->method('where')->with('id', 1)->willReturnSelf();
         $this->queryBuilder->method('first')->willReturn((object) $data);
@@ -86,7 +81,7 @@ class DataMapperTest extends TestCase
      * @throws ReflectionException
      */
     #[Test]
-    public function testForEntity()
+    public function test_for_entity()
     {
         $entityClass = User::class;
         $dataMapper = $this->dataMapper->forEntity($entityClass);
@@ -99,7 +94,7 @@ class DataMapperTest extends TestCase
      * @throws ReflectionException
      */
     #[Test]
-    public function testSetEntityClass()
+    public function test_set_entity_class()
     {
         $entityClass = User::class;
         $this->dataMapper->setEntityClass($entityClass);
@@ -112,9 +107,21 @@ class DataMapperTest extends TestCase
      */
     private function getProperty($object, $property)
     {
-        $reflection = new \ReflectionClass($object);
+        $reflection = new ReflectionClass($object);
         $property = $reflection->getProperty($property);
 
         return $property->getValue($object);
+    }
+
+    private function getTestData(): array
+    {
+        return [
+            'id' => 1,
+            'name' => 'Test',
+            'email' => 'test@test.com',
+            'password' => Str::random(12) . '/' . Str::random(40) . '.' . Str::random(7),
+            'is_active' => 1,
+            'remember_token' => Str::random(10),
+        ];
     }
 }
