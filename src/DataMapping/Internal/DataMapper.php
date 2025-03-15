@@ -9,6 +9,7 @@ use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
+use Seal\LaravelDataMapper\Utils\CodeStyle;
 
 abstract class DataMapper implements DataMapperInterface
 {
@@ -41,7 +42,7 @@ abstract class DataMapper implements DataMapperInterface
     {
         $refEntity = new ReflectionEntity($this->entityClass);
         $this->table = $refEntity->takeTableName();
-        $this->builder = $this->db->table($this->table);
+        $this->builder = $this->db->connection()->table($this->table);
     }
 
     /*
@@ -66,13 +67,19 @@ abstract class DataMapper implements DataMapperInterface
     |--------------------------------------------------------------------------
     */
 
-    public function getFields(array|string $fields): static
+    public function getFields(array $fields): static
     {
+//        $preparedFields = CodeStyle::camelToSnake($fields);
         $this->builder->select($fields);
         return $this;
     }
 
-    /**
+    private function prepareField(array $fields)
+    {
+        //
+    }
+
+        /**
      * @throws ReflectionException
      */
     public function findById(int $id): ?Entity
@@ -99,4 +106,6 @@ abstract class DataMapper implements DataMapperInterface
     {
         return $this->db->table($this->table)->where('id', $entity->id)->delete();
     }
+
+
 }
