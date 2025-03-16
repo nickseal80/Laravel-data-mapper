@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method findById(int $id)
  * @method getFields(array $field): static
+ * @method withRelationship(string $relationEntityClass): static
  */
 class DataMapperFacade extends Facade
 {

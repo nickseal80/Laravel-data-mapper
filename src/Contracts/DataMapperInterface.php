@@ -9,7 +9,8 @@ interface DataMapperInterface
 {
     public function forEntity(string $entityClass): self;
     public function getFields(array $fields): static;
-    public function getRelationships(array $relationships): static;
+    public function withRelationShip(string $relationEntityClass): static;
+    public function withRelationships(array $relationships): static;
     public function findById(int $id): static;
     public function getOne(string $order = DataMapper::FIRST):Entity;
     public function getMany(): Entity;

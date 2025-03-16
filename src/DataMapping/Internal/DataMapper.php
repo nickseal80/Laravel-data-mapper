@@ -37,7 +37,7 @@ abstract class DataMapper implements DataMapperInterface
     {
         $this->entityClass = $entityClass;
         $this->reflectionEntity = new ReflectionEntity($entityClass);
-        dd($this->reflectionEntity);
+//        dd($this->reflectionEntity);
         $this->initBuilder();
     }
 
@@ -87,7 +87,13 @@ abstract class DataMapper implements DataMapperInterface
         return $this;
     }
 
-    public function getRelationships(array $relationships): static
+    public function withRelationShip(string $relationEntityClass): static
+    {
+        //...
+        return $this;
+    }
+
+    public function withRelationships(array $relationships): static
     {
         //...
         return $this;

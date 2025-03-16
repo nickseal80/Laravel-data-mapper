@@ -6,6 +6,9 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Seal\LaravelDataMapper\Attributes\Column\Column;
+use Seal\LaravelDataMapper\Attributes\Relationships\ManyToMany;
+use Seal\LaravelDataMapper\Attributes\Relationships\OneToMany;
+use Seal\LaravelDataMapper\Attributes\Relationships\OneToOne;
 use Seal\LaravelDataMapper\Exceptions\EntityException;
 
 class ReflectionEntity extends ReflectionNode
@@ -13,6 +16,7 @@ class ReflectionEntity extends ReflectionNode
     private ReflectionClass $reflectionClass;
     private string $tableName;
     private array $columns = [];
+    private array $relationships = [];
 
     /**
      * @throws ReflectionException
@@ -37,6 +41,13 @@ class ReflectionEntity extends ReflectionNode
 
         foreach ($columns as $column) {
             $this->columns[] = new ReflectionColumn($column);
+        }
+
+        $relationships = $this->takeRelationships();
+        if (count($relationships) > 0) {
+            foreach ($relationships as $relationship) {
+                $this->relationships[] = new ReflectionRelationship($relationship);
+            }
         }
     }
 
@@ -63,6 +74,25 @@ class ReflectionEntity extends ReflectionNode
         return $columns;
     }
 
+    private function takeRelationships(): array
+    {
+        $relations = [];
+        $properties = $this->reflectionClass->getProperties();
+
+        foreach ($properties as $property) {
+            $attributes = (
+                $property->getAttributes(OneToOne::class) ||
+                $property->getAttributes(OneToMany::class) ||
+                $property->getAttributes(ManyToMany::class)
+            );
+            if (!empty($attributes)) {
+                $relations[] = $property;
+            }
+        }
+
+        return $relations;
+    }
+
     /**
      * @return string
      */
@@ -77,5 +107,13 @@ class ReflectionEntity extends ReflectionNode
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRelationships(): array
+    {
+        return $this->relationships;
     }
 }
