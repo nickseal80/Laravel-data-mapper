@@ -10,7 +10,7 @@ use Seal\LaravelDataMapper\Attributes\Relationships\OneToOne;
 class ReflectionRelationship extends ReflectionNode
 {
     public const ONE_TO_ONE = 'ONE_TO_ONE';
-    public const ONE_TO_MANY = 'ONE_TO_ONE';
+    public const ONE_TO_MANY = 'ONE_TO_MANY';
     public const MANY_TO_MANY = 'MANY_TO_MANY';
 
     private ReflectionProperty $property;
