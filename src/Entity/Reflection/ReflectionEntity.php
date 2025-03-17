@@ -7,6 +7,7 @@ use ReflectionException;
 use ReflectionProperty;
 use Seal\LaravelDataMapper\Attributes\Column\Column;
 use Seal\LaravelDataMapper\Attributes\Relationships\ManyToMany;
+use Seal\LaravelDataMapper\Attributes\Relationships\ManyToOne;
 use Seal\LaravelDataMapper\Attributes\Relationships\OneToMany;
 use Seal\LaravelDataMapper\Attributes\Relationships\OneToOne;
 use Seal\LaravelDataMapper\Exceptions\EntityException;
@@ -43,7 +44,7 @@ class ReflectionEntity extends ReflectionNode
             $this->columns[] = new ReflectionColumn($column);
         }
 
-        $relationships = $this->takeRelationships();
+        $relationships = $this->setRelationships();
         if (count($relationships) > 0) {
             foreach ($relationships as $relationship) {
                 $this->relationships[] = new ReflectionRelationship($relationship);
@@ -74,23 +75,29 @@ class ReflectionEntity extends ReflectionNode
         return $columns;
     }
 
-    private function takeRelationships(): array
+    private function setRelationships(): array
     {
-        $relations = [];
-        $properties = $this->reflectionClass->getProperties();
+        $relationTypes = [OneToOne::class, OneToMany::class, ManyToOne::class, ManyToMany::class];
 
-        foreach ($properties as $property) {
-            $attributes = (
-                $property->getAttributes(OneToOne::class) ||
-                $property->getAttributes(OneToMany::class) ||
-                $property->getAttributes(ManyToMany::class)
-            );
-            if (!empty($attributes)) {
-                $relations[] = $property;
+        return array_values(array_filter(
+            $this->reflectionClass->getProperties(),
+            fn($property) => array_intersect(
+                array_map(fn($attr) => $attr->getName(), $property->getAttributes()),
+                $relationTypes
+            )
+        ));
+    }
+
+    public function getRelationship(string $relationshipClassName)
+    {
+        $relationships = $this->getRelationships();
+        foreach ($relationships as $relationship) {
+            if ($relationship->getEntityClassName() === $relationshipClassName) {
+                return $relationship;
             }
         }
 
-        return $relations;
+        return null;
     }
 
     /**

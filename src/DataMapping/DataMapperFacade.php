@@ -3,10 +3,14 @@
 namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Support\Facades\Facade;
+use Seal\LaravelDataMapper\DataMapping\Internal\DataMapper;
+
 /**
  * @method findById(int $id)
  * @method getFields(array $field): static
  * @method withRelationship(string $relationEntityClass): static
+ *
+ * @mixin DataMapper
  */
 class DataMapperFacade extends Facade
 {
@@ -19,6 +23,6 @@ class DataMapperFacade extends Facade
 
     protected static function getFacadeAccessor(): string
     {
-        return self::DATA_MAPPING_FACADE_ACCESSOR; // Этот ключ должен совпадать с тем, что в контейнере
+        return self::DATA_MAPPING_FACADE_ACCESSOR;
     }
 }

@@ -9,7 +9,9 @@ use ReflectionException;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
+use Seal\LaravelDataMapper\Entity\Reflection\ReflectionRelationship;
 use Seal\LaravelDataMapper\Hydrator\Hydrator;
+use Seal\LaravelDataMapper\Utils\CodeStyle;
 
 abstract class DataMapper implements DataMapperInterface
 {
@@ -37,7 +39,6 @@ abstract class DataMapper implements DataMapperInterface
     {
         $this->entityClass = $entityClass;
         $this->reflectionEntity = new ReflectionEntity($entityClass);
-//        dd($this->reflectionEntity);
         $this->initBuilder();
     }
 
@@ -87,21 +88,43 @@ abstract class DataMapper implements DataMapperInterface
         return $this;
     }
 
-    public function withRelationShip(string $relationEntityClass): static
+    /* @throws ReflectionException
+     * @var array<string> $relationships
+     */
+    public function withRelationships(array $relationships): static
     {
-        //...
+        foreach ($relationships as $relationship) {
+            $this->addRelationship($relationship);
+        }
         return $this;
     }
 
-    public function withRelationships(array $relationships): static
+    /**
+     * @throws ReflectionException
+     */
+    public function addRelationship(string $relationshipClassName)
     {
-        //...
-        return $this;
+        /* @var ReflectionRelationship $reflectionRelationship */
+        $reflectionRelationship = $this->reflectionEntity->getRelationship($relationshipClassName);
+        $joinType = CodeStyle::snakeToCamel(strtolower($reflectionRelationship->getJoinType()));
+
+        $reflectionRelationEntity = new ReflectionEntity($reflectionRelationship->getEntityClassName());
+        $relationTableName = $reflectionRelationEntity->getTableName();
+
+        $this->builder->$joinType(
+            $relationTableName,
+            $this->reflectionEntity->getTableName() . '.' .$reflectionRelationship->getColumnName(),
+            '=',
+            $relationTableName . '.' .$reflectionRelationship->getReferencedColumnName()
+        );
+
+        // TODO: нужно добавить префиксы для полей, чтобы научить гидратор понимать, где реляции
+
     }
 
     public function findById(int $id): static
     {
-        $this->builder->where('id', $id);
+        $this->builder->where($this->reflectionEntity->getTableName() . '.id', $id);
         return $this;
     }
 
@@ -118,6 +141,7 @@ abstract class DataMapper implements DataMapperInterface
     public function getOne(string $order = self::FIRST):Entity
     {
         $data = $this->builder->$order();
+        dd($data);
         return $this->hydrate($data);
     }
 
