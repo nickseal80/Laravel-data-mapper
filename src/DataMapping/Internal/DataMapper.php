@@ -6,6 +6,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
 use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
+use Seal\LaravelDataMapper\Attributes\Column\Column;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
 use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
@@ -23,6 +24,7 @@ abstract class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
     protected ReflectionEntity $reflectionEntity;
+    protected array $relationships;
 
     private Builder $builder;
 
@@ -95,6 +97,7 @@ abstract class DataMapper implements DataMapperInterface
     {
         foreach ($relationships as $relationship) {
             $this->addRelationship($relationship);
+            $this->relationships[] = $relationship;
         }
         return $this;
     }
@@ -141,7 +144,6 @@ abstract class DataMapper implements DataMapperInterface
     public function getOne(string $order = self::FIRST):Entity
     {
         $data = $this->builder->$order();
-        dd($data);
         return $this->hydrate($data);
     }
 
@@ -165,7 +167,7 @@ abstract class DataMapper implements DataMapperInterface
      */
     private function hydrate($data)
     {
-        return $this->hydrator->hydrate((array)$data, $this->entityClass);
+        return $this->hydrator->hydrate((array)$data, $this->entityClass, $this->relationships);
     }
 
     public function save(object $entity): bool
