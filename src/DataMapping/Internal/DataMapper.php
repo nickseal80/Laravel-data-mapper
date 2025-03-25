@@ -24,7 +24,6 @@ abstract class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
     protected ReflectionEntity $reflectionEntity;
-    protected array $relationships;
 
     private Builder $builder;
 
@@ -97,7 +96,6 @@ abstract class DataMapper implements DataMapperInterface
     {
         foreach ($relationships as $relationship) {
             $this->addRelationship($relationship);
-            $this->relationships[] = $relationship;
         }
         return $this;
     }
@@ -120,9 +118,6 @@ abstract class DataMapper implements DataMapperInterface
             '=',
             $relationTableName . '.' .$reflectionRelationship->getReferencedColumnName()
         );
-
-        // TODO: нужно добавить префиксы для полей, чтобы научить гидратор понимать, где реляции
-
     }
 
     public function findById(int $id): static
@@ -167,7 +162,7 @@ abstract class DataMapper implements DataMapperInterface
      */
     private function hydrate($data)
     {
-        return $this->hydrator->hydrate((array)$data, $this->entityClass, $this->relationships);
+        return $this->hydrator->hydrate((array)$data, $this->entityClass);
     }
 
     public function save(object $entity): bool

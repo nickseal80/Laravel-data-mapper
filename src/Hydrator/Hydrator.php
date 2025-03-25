@@ -4,8 +4,8 @@ namespace Seal\LaravelDataMapper\Hydrator;
 
 use ReflectionClass;
 use ReflectionException;
+use ReflectionNamedType;
 use Seal\LaravelDataMapper\Entity\Entity;
-use Seal\LaravelDataMapper\Utils\CodeStyle;
 use Seal\LaravelDataMapper\Utils\ReflectionUtil;
 
 class Hydrator
@@ -13,31 +13,38 @@ class Hydrator
     /**
      * @throws ReflectionException
      */
-    public function hydrate(array $data, string $entityClass, ?array $relationEntityClasses = null)
+    public function hydrate(array $data, string $entityClass)
     {
+        // TODO: Добавить проверку на одноимённые поля главной и приджоиниваемой сущности(тей)
+
         $reflection = new ReflectionClass($entityClass);
         $object = $reflection->newInstanceWithoutConstructor(); // Создаем объект без конструктора
 
         foreach ($data as $key => $value) {
-            if ($this->hasSetter($key, $reflection)) {
-                $method = $reflection->getMethod(ReflectionUtil::getAccessor($key, ReflectionUtil::SET_ACCESSOR));
-                $typeName = $method->getParameters()[0]->getType()->getName();
-                if (!is_a($typeName, 'Seal\LaravelDataMapper\Entity\Entity', true)) {
-                    $method->invoke($object, $value); // Вызываем метод-сеттер
-                } else {
-                    $relationEntity = $this->hydrate($data, $typeName);
-                    $method->invoke($object, $relationEntity);
-                }
+            $setterName = ReflectionUtil::getAccessor($key, ReflectionUtil::SET_ACCESSOR);
+
+            if (!$reflection->hasMethod($setterName)) {
+                continue; // Пропускаем, если сеттера нет
             }
+
+            $method = $reflection->getMethod($setterName);
+            $parameter = $method->getParameters()[0] ?? null;
+
+            if (!$parameter || !($parameter->getType() instanceof ReflectionNamedType)) {
+                continue; // Если нет типа, просто пропускаем
+            }
+
+            $type = $parameter->getType()->getName();
+
+            // Проверяем, является ли целевой класс наследником Entity
+            if (is_a($type, Entity::class, true)) {
+                $value = $this->hydrate($data, $type); // Рекурсивно создаем вложенную сущность
+            }
+
+            $method->invoke($object, $value); // Вызываем сеттер
         }
 
         return $object;
-    }
-
-    private function hasSetter(string $property, ReflectionClass $reflectionClass): bool
-    {
-        $setter = ReflectionUtil::getAccessor($property, ReflectionUtil::SET_ACCESSOR);
-        return $reflectionClass->hasMethod($setter);
     }
 
     public function extract(object $entity): array
