@@ -12,7 +12,8 @@ interface DataMapperInterface
     public function withRelationships(array $relationships): static;
     public function findById(int $id): static;
     public function getOne(string $order = DataMapper::FIRST):Entity;
-    public function getMany(): Entity;
+    public function getAll(): Entity;
     public function save(object $entity);
     public function delete(object $entity);
+    public function getQuery();
 }

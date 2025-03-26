@@ -33,9 +33,9 @@ class ReflectionEntity extends ReflectionNode
      */
     public function initialize(): void
     {
-        $this->tableName = $this->takeTableName();
+        $this->tableName = $this->setTableName();
 
-        $columns = $this->takeColumns();
+        $columns = $this->setColumns();
         if (count($columns) <= 0) {
             throw new EntityException("Entity does not contain any columns");
         }
@@ -52,7 +52,7 @@ class ReflectionEntity extends ReflectionNode
         }
     }
 
-    public function takeTableName(): string
+    public function setTableName(): string
     {
         return $this->reflectionClass->getStaticPropertyValue('table');
     }
@@ -60,7 +60,7 @@ class ReflectionEntity extends ReflectionNode
     /**
      * @return array<ReflectionProperty>
      */
-    private function takeColumns(): array
+    private function setColumns(): array
     {
         $columns = [];
         $properties = $this->reflectionClass->getProperties();
@@ -122,5 +122,13 @@ class ReflectionEntity extends ReflectionNode
     public function getRelationships(): array
     {
         return $this->relationships;
+    }
+
+    /**
+     * @return ReflectionClass
+     */
+    public function getReflectionClass(): ReflectionClass
+    {
+        return $this->reflectionClass;
     }
 }

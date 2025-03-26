@@ -2,10 +2,11 @@
 
 namespace Seal\LaravelDataMapper\Hydrator;
 
-use ReflectionClass;
 use ReflectionException;
 use ReflectionNamedType;
 use Seal\LaravelDataMapper\Entity\Entity;
+use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
+use Seal\LaravelDataMapper\Entity\Reflection\ReflectionRelationship;
 use Seal\LaravelDataMapper\Utils\ReflectionUtil;
 
 class Hydrator
@@ -13,15 +14,30 @@ class Hydrator
     /**
      * @throws ReflectionException
      */
-    public function hydrate(array $data, string $entityClass)
+    public function hydrate(array $data, string $entityClass, ?array $relationEntityClasses = null)
     {
-        // TODO: Добавить проверку на одноимённые поля главной и приджоиниваемой сущности(тей)
+        $reflectionEntity = new ReflectionEntity($entityClass);
+        $table = $reflectionEntity->getTableName();
 
-        $reflection = new ReflectionClass($entityClass);
+        $reflection = $reflectionEntity->getReflectionClass();
         $object = $reflection->newInstanceWithoutConstructor(); // Создаем объект без конструктора
 
+
+        if ($relationEntityClasses && count($relationEntityClasses) > 0) {
+            foreach ($relationEntityClasses as $className) {
+
+                /* @var ReflectionRelationship $relationship */
+                foreach ($reflectionEntity->getRelationships() as $relationship) {
+                    if ($className === $relationship->getEntityClassName()) {
+                        $data[$relationship->getName()] = null;
+                    }
+                }
+            }
+        }
+
         foreach ($data as $key => $value) {
-            $setterName = ReflectionUtil::getAccessor($key, ReflectionUtil::SET_ACCESSOR);
+            $propertyName = preg_replace("/^{$table}_(.*)/", '$1', $key);
+            $setterName = ReflectionUtil::getAccessor($propertyName, ReflectionUtil::SET_ACCESSOR);
 
             if (!$reflection->hasMethod($setterName)) {
                 continue; // Пропускаем, если сеттера нет

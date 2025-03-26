@@ -24,6 +24,7 @@ abstract class DataMapper implements DataMapperInterface
     protected string $table;
     protected string $entityClass;
     protected ReflectionEntity $reflectionEntity;
+    protected array $relationships;
 
     private Builder $builder;
 
@@ -49,7 +50,7 @@ abstract class DataMapper implements DataMapperInterface
     private function initBuilder()
     {
         $refEntity = new ReflectionEntity($this->entityClass);
-        $this->table = $refEntity->takeTableName();
+        $this->table = $refEntity->setTableName();
         $this->builder = $this->db->connection()->table($this->table);
     }
 
@@ -96,6 +97,7 @@ abstract class DataMapper implements DataMapperInterface
     {
         foreach ($relationships as $relationship) {
             $this->addRelationship($relationship);
+            $this->relationships[] = $relationship;
         }
         return $this;
     }
@@ -112,12 +114,23 @@ abstract class DataMapper implements DataMapperInterface
         $reflectionRelationEntity = new ReflectionEntity($reflectionRelationship->getEntityClassName());
         $relationTableName = $reflectionRelationEntity->getTableName();
 
+        $this->addAliasedColumns($this->reflectionEntity->getTableName());
+        $this->addAliasedColumns($relationTableName);
+
         $this->builder->$joinType(
             $relationTableName,
             $this->reflectionEntity->getTableName() . '.' .$reflectionRelationship->getColumnName(),
             '=',
             $relationTableName . '.' .$reflectionRelationship->getReferencedColumnName()
         );
+    }
+
+    private function addAliasedColumns(string $table)
+    {
+        $columns = $this->db->connection()->getSchemaBuilder()->getColumnListing($table);
+        foreach ($columns as $column) {
+            $this->builder->addSelect("$table.$column as {$table}_{$column}");
+        }
     }
 
     public function findById(int $id): static
@@ -145,9 +158,10 @@ abstract class DataMapper implements DataMapperInterface
     /**
      * @throws ReflectionException
      */
-    public function getMany(): Entity
+    public function getAll(): Entity
     {
         $data = $this->builder->get();
+        // TODO: обработать коллекцию $data для гидрации
         return $this->hydrate($data);
     }
 
@@ -162,7 +176,7 @@ abstract class DataMapper implements DataMapperInterface
      */
     private function hydrate($data)
     {
-        return $this->hydrator->hydrate((array)$data, $this->entityClass);
+        return $this->hydrator->hydrate((array)$data, $this->entityClass, $this->relationships);
     }
 
     public function save(object $entity): bool
