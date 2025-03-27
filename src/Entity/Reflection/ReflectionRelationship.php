@@ -13,10 +13,10 @@ use Seal\LaravelDataMapper\Utils\ReflectionUtil;
 
 class ReflectionRelationship extends ReflectionNode
 {
-    public const ONE_TO_ONE = 'ONE_TO_ONE';
-    public const ONE_TO_MANY = 'ONE_TO_MANY';
-    public const MANY_TO_ONE = 'MANY_TO_ONE';
-    public const MANY_TO_MANY = 'MANY_TO_MANY';
+    public const ONE_TO_ONE = 'OneToOne';
+    public const ONE_TO_MANY = 'OneToMany';
+    public const MANY_TO_ONE = 'ManyToOne';
+    public const MANY_TO_MANY = 'ManyToMany';
 
     private ReflectionProperty $property;
     private readonly string $name;
@@ -31,11 +31,21 @@ class ReflectionRelationship extends ReflectionNode
         parent::__construct();
     }
 
+    /**
+     * @throws EntityException
+     */
     public function initialize()
     {
         $this->name = $this->property->getName();
-        $this->entityClassName = $this->property->getType();
         $this->detectType();
+
+        if ($this->relationshipType === self::ONE_TO_ONE || $this->relationshipType === self::MANY_TO_ONE) {
+            $this->entityClassName = $this->property->getType();
+        } elseif ($this->relationshipType === self::ONE_TO_MANY) {
+            $attrs = $this->property->getAttributes(OneToMany::class);
+            $args = $attrs[0]->getArguments();
+            $this->entityClassName = $args['arrayOf'];
+        }
         $this->setReferences();
     }
 

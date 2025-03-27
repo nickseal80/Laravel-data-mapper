@@ -16,9 +16,9 @@ class DataMapperFacade extends Facade
 {
     public const DATA_MAPPING_FACADE_ACCESSOR = 'data.mapper';
 
-    public static function forEntity(string $entityClass)
+    public static function forEntity(string $entityClass, callable $callback)
     {
-        return app(self::getFacadeAccessor())->forEntity($entityClass);
+        return $callback(app(self::getFacadeAccessor())->forEntity($entityClass));
     }
 
     protected static function getFacadeAccessor(): string

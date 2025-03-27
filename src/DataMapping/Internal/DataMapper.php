@@ -8,6 +8,7 @@ use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
 use Seal\LaravelDataMapper\Attributes\Column\Column;
 use Seal\LaravelDataMapper\Contracts\DataMapperInterface;
+use Seal\LaravelDataMapper\DataMapping\Criteria\Criteria;
 use Seal\LaravelDataMapper\Entity\Entity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionRelationship;
@@ -152,6 +153,7 @@ abstract class DataMapper implements DataMapperInterface
     public function getOne(string $order = self::FIRST):Entity
     {
         $data = $this->builder->$order();
+        dd($data);
         return $this->hydrate($data);
     }
 
