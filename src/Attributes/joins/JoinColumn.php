@@ -4,7 +4,7 @@ namespace Seal\LaravelDataMapper\Attributes\joins;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class JoinColumn
 {
     public function __construct(

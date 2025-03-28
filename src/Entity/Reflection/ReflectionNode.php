@@ -6,22 +6,20 @@ use Illuminate\Support\Str;
 
 abstract class ReflectionNode
 {
-    private readonly string $serial;
+    public const SERIAL = 'L202503290009';
+
+    protected string $uuid;
 
     public function __construct()
     {
-        $this->serial = Str::uuid();
-
+        $this->uuid = Str::uuid();
         $this->initialize();
     }
 
     abstract public function initialize();
 
-    /**
-     * @return string
-     */
-    public function getSerial(): string
+    public function getUuid(): string
     {
-        return $this->serial;
+        return $this->uuid;
     }
 }
