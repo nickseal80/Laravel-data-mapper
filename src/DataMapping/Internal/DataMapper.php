@@ -26,6 +26,7 @@ abstract class DataMapper implements DataMapperInterface
     protected string $entityClass;
     protected ReflectionEntity $reflectionEntity;
     protected array $relationships;
+    protected Criteria $criteria;
 
     private Builder $builder;
 
@@ -38,11 +39,24 @@ abstract class DataMapper implements DataMapperInterface
     /**
      * @throws ReflectionException
      */
+    public function forEntity(string $entityClass, Criteria $criteria): self
+    {
+
+        $clone = clone $this;
+        $clone->criteria = $criteria;
+        $clone->setEntityClass($entityClass);
+        return $clone;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
     public function setEntityClass(string $entityClass)
     {
         $this->entityClass = $entityClass;
         $this->reflectionEntity = new ReflectionEntity($entityClass);
         $this->initBuilder();
+        $this->applyCriteria();
     }
 
     /**
@@ -55,21 +69,37 @@ abstract class DataMapper implements DataMapperInterface
         $this->builder = $this->db->connection()->table($this->table);
     }
 
+    public function applyCriteria()
+    {
+        // Добавляем JOIN'ы из аннотаций
+        foreach ($this->criteria->toArray()['joins'] as $join) {
+            $method = $join['type'];
+            $this->builder->$method($join['table'], $join['leftColumn'], $join['operator'], $join['rightColumn']);
+        }
+
+        // WHERE условия
+        foreach ($this->criteria->toArray()['where'] as $condition) {
+            $this->builder->{$condition['boolean']}(...$condition['condition']);
+        }
+
+        // Сортировка
+        foreach ($this->criteria->toArray()['order'] as $column => $direction) {
+            $this->builder->orderBy($column, $direction);
+        }
+
+        // Лимит
+        if ($this->criteria->toArray()['limit']) {
+            $this->builder->limit($this->criteria->toArray()['limit']);
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query methods
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * @throws ReflectionException
-     */
-    public function forEntity(string $entityClass): self
-    {
-        $clone = clone $this;
-        $clone->setEntityClass($entityClass);
-        return $clone;
-    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -191,6 +221,14 @@ abstract class DataMapper implements DataMapperInterface
     public function delete(object $entity): int
     {
         return $this->builder->where('id', $entity->id)->delete();
+    }
+
+    /**
+     * @return Criteria
+     */
+    public function getCriteria(): Criteria
+    {
+        return $this->criteria;
     }
 
 

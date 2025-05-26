@@ -63,7 +63,7 @@ class ReflectionRelationship extends ReflectionNode
         $args = $joinColumnAttribute->getArguments();
         $this->columnName = $args['columnName'] ?? '';
         $this->referencedColumnName = $args['referencedColumnName'] ?? '';
-        $this->joinType = $args['joinType']->value ?? 'JOIN';
+        $this->joinType = $args['joinType']->value ?? 'join';
     }
 
     private function detectType()

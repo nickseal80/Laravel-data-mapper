@@ -3,6 +3,7 @@
 namespace Seal\LaravelDataMapper\DataMapping;
 
 use Illuminate\Support\Facades\Facade;
+use Seal\LaravelDataMapper\DataMapping\Criteria\Criteria;
 use Seal\LaravelDataMapper\DataMapping\Internal\DataMapper;
 
 /**
@@ -18,7 +19,9 @@ class DataMapperFacade extends Facade
 
     public static function forEntity(string $entityClass, callable $callback)
     {
-        return $callback(app(self::getFacadeAccessor())->forEntity($entityClass));
+        $criteria = new Criteria($entityClass);
+        $callback($criteria);
+        return app(self::getFacadeAccessor())->forEntity($entityClass, $criteria);
     }
 
     protected static function getFacadeAccessor(): string

@@ -2,82 +2,35 @@
 
 namespace Seal\LaravelDataMapper\DataMapping\Criteria;
 
+use Illuminate\Support\Facades\Log;
 use ReflectionException;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionEntity;
 use Seal\LaravelDataMapper\Entity\Reflection\ReflectionRelationship;
+use Seal\LaravelDataMapper\Exceptions\EntityException;
 
 class Criteria
 {
     protected string $entityClass;
 
-    private array $conditions = [];
-    private array $joins = [];
-    private array $order = [];
-    private ?int $limit = null;
+    private array $props = [];
 
-    public function __construct(string $entityClass) {}
-
-    public function where(string $column, string $operator, mixed $value): self
+    public function __construct(string $entityClass)
     {
-        $this->conditions[] = ['type' => 'where', 'boolean' => 'and', 'condition' => [$column, $operator, $value]];
-        return $this;
+        $this->entityClass = $entityClass;
     }
 
     /**
-     * @throws ReflectionException
+     * @param array $properties
+     * ['fieldName1' => 'fieldAlias1', 'fieldName2' ...] or ['fieldName1', 'fieldName2', ... ]
+     *
+     * @return Criteria
      */
-    public function withRelationships(array $relations): self
-    {
-        foreach ($relations as $relation) {
-            $this->addJoinFromEntity($relation);
+    public function getProperties(array $properties): Criteria {
+        $fieldSet = new FieldSet();
+        foreach ($properties as $property => $alias) {
+            $fieldSet->add($property, $alias);
         }
+
         return $this;
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    private function addJoinFromEntity(string $relation): void
-    {
-        $reflectionEntity = new ReflectionEntity($this->entityClass);
-
-        /* @var ReflectionRelationship $relationship */
-        foreach ($reflectionEntity->getRelationships() as $relationship) {
-            if ($relationship->getName() !== $relation) {
-                continue;
-            }
-
-            $relationEntity = new ReflectionEntity($relationship->getEntityClassName());
-
-            $this->joins[] = [
-                'table' => $relationEntity->getTableName(),
-                'leftColumn' => $reflectionEntity->getTableName() . '.' . $relationship->getColumnName(),
-                'operator' => '=',
-                'rightColumn' => $relationEntity->getTableName() . '.' . $relationship->getReferencedColumnName(),
-                'type' => $relationship->getJoinType(),
-            ];
-        }
-    }
-
-    public function orderBy(string $column, string $direction = 'asc'): self
-    {
-        $this->order[$column] = $direction;
-        return $this;
-    }
-
-    public function limit(int $value): self
-    {
-        $this->limit = $value;
-        return $this;
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'joins' => $this->joins,
-            'where' => $this->conditions,
-            'order' => $this->order,
-            'limit' => $this->limit,
-        ];
     }
 }

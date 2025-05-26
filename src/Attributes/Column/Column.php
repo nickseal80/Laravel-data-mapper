@@ -17,7 +17,7 @@ class Column
         public bool  $unique = false,
         public bool  $primaryKey = false,
 
-        public string $name = '',
+        public string $columnName = '',
         public mixed $default = null,
     ) {}
 }
